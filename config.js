@@ -1,5 +1,5 @@
 module.exports = {
-    "token": "NTkzMDc4MTQ0OTIwMDU5OTM1.XRIpGA.MiDXzeNJrBOvmMx2WhcZ2bbNKHc",
+    "token": "NTkzMzcxMTY2MTQwMjY4NTY1.XRM5_g.J7_A_buMAnv_K9WSO41cdu4To5k",
     //Don't edit the data below please
     "prefix":"cb!",
     "QuizTimeLimit":120000

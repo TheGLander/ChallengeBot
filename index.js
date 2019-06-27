@@ -76,7 +76,7 @@ const badges = [{
 function SetBadges(stats) {
     var curbadges = stats.badges
     for (var i = 0; i != badges.length; i++) {
-        if (eval(badges[i].condition)) {
+        if (eval(badges[i].condition) && !useful.in_array(i, stats.badges)) {
             curbadges[curbadges.length] = i
         }
     }
@@ -126,6 +126,52 @@ const Commands = {
 
         msg.channel.send()
     },
+    "top":async (msg) => {
+        var top10;
+        switch (msg.content) {
+            case "cb!top wrong":
+                top10 = sql.prepare("SELECT * FROM users WHERE guild = ? ORDER BY totalwrong DESC LIMIT 10;").all(msg.guild.id);
+                var embed = new discord.RichEmbed()
+                    .setTitle("Leaderboard")
+                    .setColor(5301186);
+                    console.log()
+                for (var i = 0; i != top10.length; i++) {
+                    embed.addField((await client.fetchUser(top10[i].user)).tag, top10[i].totalwrong + " invalid words")
+                }
+
+                msg.channel.send({
+                    embed
+                })
+                break;
+            case "cb!top coins":
+                top10 = sql.prepare("SELECT * FROM users WHERE guild = ? ORDER BY totalwrong DESC LIMIT 10;").all(msg.guild.id);
+                var embed = new discord.RichEmbed()
+                    .setTitle("Leaderboard")
+                    .setColor(5301186);
+                console.log()
+                for (var i = 0; i != top10.length; i++) {
+                    embed.addField((await client.fetchUser(top10[i].user)).tag, top10[i].coins + " coins")
+                }
+                msg.channel.send({
+                    embed
+                })
+                break;
+            default:
+                top10 = sql.prepare("SELECT * FROM users WHERE guild = ? ORDER BY totalwrong DESC LIMIT 10;").all(msg.guild.id);
+                var embed = new discord.RichEmbed()
+                    .setTitle("Leaderboard")
+                    .setColor(5301186);
+                console.log()
+                for (var i = 0; i != top10.length; i++) {
+                    embed.addField((await client.fetchUser(top10[i].user)).tag, top10[i].totalright + " words")
+                }
+
+                msg.channel.send({
+                    embed
+                })
+                break;
+        }
+    },
     "stats": async (msg) => {
         var stats = sql.prepare("SELECT * FROM users WHERE user = ? AND guild = ?").get(msg.author.id, msg.guild.id);
         if (!stats) {
@@ -165,38 +211,14 @@ const Commands = {
                 }
             ]
         };
-        var embed2 = {
-            "title": "Badges",
-            "color": 5301186,
-            "thumbnail": {
-                "url": msg.author.avatarURL
-            },
-            "author": {
-                "name": msg.author.tag,
-                "icon_url": msg.author.avatarURL
-            },
-            "fields": [{
-                    "name": "Badge 1",
-                    "value": "Bla blah blah"
-                },
-                {
-                    "name": "Badge 2",
-                    "value": "This is badge 2"
-                },
-                {
-                    "name": "Badge 4",
-                    "value": "RIP badge 3"
-                }
-            ]
-        };
         await msg.channel.send({
             embed
         })
         var fields = []
-        for(var i = 0;i != stats.badges.length; i++){
+        for (var i = 0; i != stats.badges.length; i++) {
             fields[i] = {
-                "name": badges[i].name,
-                "description": badges[i].desc
+                "name": badges[stats.badges[i]].name,
+                "value": badges[stats.badges[i]].desc
             }
         }
         var embed = {
@@ -209,19 +231,7 @@ const Commands = {
                 "name": msg.author.tag,
                 "icon_url": msg.author.avatarURL
             },
-            "fields": [{
-                    "name": "Badge 1",
-                    "value": "Bla blah blah"
-                },
-                {
-                    "name": "Badge 2",
-                    "value": "This is badge 2"
-                },
-                {
-                    "name": "Badge 4",
-                    "value": "RIP badge 3"
-                }
-            ]
+            "fields": fields
         };
         await msg.channel.send({
             embed
@@ -298,6 +308,9 @@ client.on('message', (msg) => {
     if (msg.author.bot) {
         return;
     };
+    if (!msg.guild) {
+        return
+    }
     if (useful.in_array(msg.content.substr(config.prefix.length).split(" ")[0], Object.keys(Commands)) && msg.content.substr(0, config.prefix.length) == config.prefix) {
         Commands[msg.content.substr(config.prefix.length).split(" ")[0]](msg)
     } else if (challengelist[msg.guild.id] !== undefined) {

@@ -51,10 +51,11 @@ var challengelist = {
  # # # # #     # # # # # # #     # # # # #
      # # # #                   # # # #    
        # # # #               # # # # */
+//All available badges
 const badges = [{
-        "name": "First word!",
-        "desc": "Say your first right word!\n(Say your first right word)",
-        "condition": "stats.totalright >= 1"
+        "name": "First word!", //The name of the badge
+        "desc": "Say your first right word!\n(Say your first right word)", //It's description
+        "condition": "stats.totalright >= 1" //The logical condition for obtaining(Will be eval()'ed)
     },
     {
         "name": "First-grader!",
@@ -70,13 +71,67 @@ const badges = [{
         "name": "Typo-man",
         "desc": "Were these typos though?\n(Say 3 invalid words)",
         "condition": "stats.totalwrong >= 3"
-    }
+    },
+    {
+        "name": "Cheaters are never winners",
+        "desc": "Cheating is bad\n(Buy a badge)",
+        "condition": "false" //This badge is a special case, it's obtained after buying a badge, hardcoded in
+    },
+    {
+        "name": "Vowel master",
+        "desc": "A true knower of vowels",
+        "condition": "stats.alphabet.includes(0) && stats.alphabet.includes(4) && stats.alphabet.includes(8) && stats.alphabet.includes(14) && stats.alphabet.includes(20)"
+    },
+    {
+        "name": "Purchasable badge A",
+        "desc": "Do you feel like a winner?",
+        "condition": "true", //When a badge has a cost, conditions acts like a requirement for buying
+        "cost": 15 //The cost of a badge(Buyable badges only)
+    },
+    {
+        "name": "Purchasable badge A+",
+        "desc": "You are the winner+!\n(Must have Purchasable badge A)",
+        "condition": "useful.in_array(6, stats.badges)",
+        "cost": 30
+    },
+    {
+        "name": "Purchasable badge B",
+        "desc": "You feel like a champion, right?",
+        "condition": "true",
+        "cost": 50
+    },
+    {
+        "name": "Purchasable badge B+",
+        "desc": "You are the super champion+!\n(Must have Purchasable badge B)",
+        "condition": "useful.in_array(8, stats.badges)",
+        "cost": 100
+    },
+    {
+        "name": "Purchasable badge C",
+        "desc": "You are a legend, am I right?",
+        "condition": "true",
+        "cost": 125
+    },
+    {
+        "name": "Purchasable badge C+",
+        "desc": "You are the ultra-super legend plus!\n(Must have Purchasable badge C)",
+        "condition": "useful.in_array(10, stats.badges)",
+        "cost": 250
+    },
+    {
+        "name": "Purchasable badge C++",
+        "desc": "Oh no! A programming language reference!\n(Must have Purchasable badge C+)",
+        "condition": "useful.in_array(11, stats.badges)",
+        "cost": 500
+    },
+
+
 ]
 
-function SetBadges(stats) {
+function SetBadges(stats) { //Set the Badges having the stats
     var curbadges = stats.badges
     for (var i = 0; i != badges.length; i++) {
-        if (eval(badges[i].condition) && !useful.in_array(i, stats.badges)) {
+        if (eval(badges[i].condition) && !useful.in_array(i, stats.badges) && badges[i].cost === undefined) { //Check if condition is true, if doesn't have the badge, and if it's not buyable
             curbadges[curbadges.length] = i
         }
     }
@@ -124,19 +179,27 @@ const Commands = {
     },
     "help": (msg) => {
 
-        msg.channel.send()
     },
-    "top":async (msg) => {
+    "top": async (msg) => {
         var top10;
         switch (msg.content) {
             case "cb!top wrong":
                 top10 = sql.prepare("SELECT * FROM users WHERE guild = ? ORDER BY totalwrong DESC LIMIT 10;").all(msg.guild.id);
-                var embed = new discord.RichEmbed()
-                    .setTitle("Leaderboard")
-                    .setColor(5301186);
-                    console.log()
+                var embed = {
+                    "title": "Leaderboard",
+                    "color": 5301186,
+                    "author": {
+                        "name": msg.author.tag,
+                        "icon_url": msg.author.avatarURL
+                    },
+                    "fields": []
+
+                }
                 for (var i = 0; i != top10.length; i++) {
-                    embed.addField((await client.fetchUser(top10[i].user)).tag, top10[i].totalwrong + " invalid words")
+                    embed.fields[i] = {
+                        "name": (await client.fetchUser(top10[i].user)).tag,
+                        "value": top10[i].totalwrong + " invalid words"
+                    }
                 }
 
                 msg.channel.send({
@@ -144,36 +207,52 @@ const Commands = {
                 })
                 break;
             case "cb!top coins":
-                top10 = sql.prepare("SELECT * FROM users WHERE guild = ? ORDER BY totalwrong DESC LIMIT 10;").all(msg.guild.id);
-                var embed = new discord.RichEmbed()
-                    .setTitle("Leaderboard")
-                    .setColor(5301186);
-                console.log()
-                for (var i = 0; i != top10.length; i++) {
-                    embed.addField((await client.fetchUser(top10[i].user)).tag, top10[i].coins + " coins")
+                top10 = sql.prepare("SELECT * FROM users WHERE guild = ? ORDER BY coins DESC LIMIT 10;").all(msg.guild.id);
+                var embed = {
+                    "title": "Leaderboard",
+                    "color": 5301186,
+                    "author": {
+                        "name": msg.author.tag,
+                        "icon_url": msg.author.avatarURL
+                    },
+                    "fields": []
+
                 }
-                msg.channel.send({
-                    embed
-                })
-                break;
-            default:
-                top10 = sql.prepare("SELECT * FROM users WHERE guild = ? ORDER BY totalwrong DESC LIMIT 10;").all(msg.guild.id);
-                var embed = new discord.RichEmbed()
-                    .setTitle("Leaderboard")
-                    .setColor(5301186);
-                console.log()
                 for (var i = 0; i != top10.length; i++) {
-                    embed.addField((await client.fetchUser(top10[i].user)).tag, top10[i].totalright + " words")
+                    embed.fields[i] = {
+                        "name": (await client.fetchUser(top10[i].user)).tag,
+                        "value": top10[i].coins + " coins"
+                    }
                 }
 
                 msg.channel.send({
                     embed
                 })
                 break;
+            default:
+                top10 = sql.prepare("SELECT * FROM users WHERE guild = ? ORDER BY totalright DESC LIMIT 10;").all(msg.guild.id);
+                var embed = {
+                    "title": "Leaderboard",
+                    "color": 5301186,
+                    "author": {
+                        "name": msg.author.tag,
+                        "icon_url": msg.author.avatarURL
+                    },
+                    "fields": []
+
+                }
+                for (var i = 0; i != top10.length; i++) {
+                    embed.fields[i] = {
+                        "name": (await client.fetchUser(top10[i].user)).tag,
+                        "value": top10[i].totalright + " valid words"
+                    }
+                }
+                break;
         }
     },
     "stats": async (msg) => {
-        var stats = sql.prepare("SELECT * FROM users WHERE user = ? AND guild = ?").get(msg.author.id, msg.guild.id);
+        var userID = msg.mentions.members.first() ? msg.mentions.members.first().id : msg.author.id
+        var stats = sql.prepare("SELECT * FROM users WHERE user = ? AND guild = ?").get(userID, msg.guild.id);
         if (!stats) {
             msg.channel.send("You need to participate in a challenge to view your stats!");
             return
@@ -233,6 +312,103 @@ const Commands = {
             },
             "fields": fields
         };
+        await msg.channel.send({
+            embed
+        })
+    },
+    "shop": async (msg) => {
+        if (msg.content.split(" ")[1] == "buy") { //The buying process
+            var fields = [];
+            for (var i = 0; i != badges.length; i++) {
+                if (badges[i].cost) {
+                    fields[fields.length] = i
+                }
+            }
+            var itemID = parseInt(msg.content.split(" ")[2]) - 1;
+            if (itemID === undefined) {
+                msg.channel.send("To buy you need an item ID!")
+                return;
+            } else if (itemID > fields.length || itemID < 0 || isNaN(itemID)) {
+                msg.channel.send("Invalid item ID!")
+                return;
+            }
+            var item = badges[fields[itemID]]
+            var stats = sql.prepare("SELECT * FROM users WHERE user = ? AND guild = ?").get(msg.author.id, msg.guild.id);
+            stats.badges = JSON.parse(stats.badges)
+            if (stats.badges.includes(fields[itemID])) {
+                msg.channel.send("You already have the badge!")
+                return;
+            }
+            if (stats.coins < item.cost) {
+                msg.channel.send("Not enough coins!")
+                return;
+            }
+            if (!eval(item.condition)) {
+                msg.channel.send("Badge's conditions are not met!")
+                return;
+            }
+            stats.coins -= item.cost
+            stats.badges[stats.badges.length] = fields[itemID]
+            if(!stats.badges.includes(4)){
+                stats.badges[stats.badges.length] = 4
+            }
+            stats.badges.sort()
+            stats.badges = JSON.stringify(stats.badges)
+            const embed = { //The purchase embed
+                "title": "Shop",
+                "color": 5301186,
+                "author": {
+                    "name": msg.author.tag,
+                    "icon_url": msg.author.avatarURL
+                },
+                "fields": [{
+                    "name": "Purchase successful!",
+                    "value": "New badge obtained - " + item.name + "!"
+                }]
+                
+            };
+            await msg.channel.send({
+                embed
+            })
+            sql.prepare("INSERT OR REPLACE INTO users (id, user, guild, coins, badges, totalright, totalwrong, alphabet, other) VALUES (@id, @user, @guild, @coins, @badges, @totalright, @totalwrong, @alphabet, @other);").run(stats);
+            return;
+        }
+        const embed = { //The shop embed
+            "title": "Shop",
+            "color": 5301186,
+            "author": {
+                "name": msg.author.tag,
+                "icon_url": msg.author.avatarURL
+            },
+            "fields": []
+        };
+        var fields = []
+        //Get all things that can be bought
+        for (var i = 0; i != badges.length; i++) {
+            if (badges[i].cost) {
+                fields[fields.length] = {
+                    "name": `${fields.length + 1} - **${badges[i].name} - ${badges[i].cost} coins**`,
+                    "value": badges[i].desc
+                }
+            }
+        }
+        var page = parseInt(msg.content.split(" ")[1] === undefined ? 1 : msg.content.split(" ")[1]) //Get the page
+        var maxpage = fields.length / 5 > Math.trunc(fields.length / 5) ? Math.trunc(fields.length / 5) + 1 : fields.length / 5 //Get the page maximum
+        if (page > maxpage || page < 1 || isNaN(page)) { //Check if the number is valid
+            msg.channel.send("Invalid number");
+            return;
+        }
+        var limit = page == maxpage ? fields.length - 5 * (maxpage - 1) : 5 //The limit of pages
+        if (fields.length > 5) {
+            embed.footer = {
+                "text": "If you want to see more badges, append a number, like: cb!shop 2 (Page " + page + "/" + maxpage + ")" //If there are multiple pages
+            }
+        }
+        //Add the needed fields to the embed
+        for (var i = 0; i != limit; i++) {
+            embed.fields[embed.fields.length] = fields[i + (page - 1) * 5]
+        }
+        //Send the embed
         await msg.channel.send({
             embed
         })
@@ -378,6 +554,7 @@ client.on('message', (msg) => {
                         });
                     }
                 }
+                stats.alphabet.sort()
                 stats.badges = JSON.stringify(stats.badges);
                 stats.alphabet = JSON.stringify(stats.alphabet);
                 sql.prepare("INSERT OR REPLACE INTO users (id, user, guild, coins, badges, totalright, totalwrong, alphabet, other) VALUES (@id, @user, @guild, @coins, @badges, @totalright, @totalwrong, @alphabet, @other);").run(stats)

@@ -351,21 +351,37 @@ const Commands = {
             stats.badges[stats.badges.length] = fields[itemID]
             if(!stats.badges.includes(4)){
                 stats.badges[stats.badges.length] = 4
+                const embed = {
+                    "title": "NEW BADGE",
+                    "description": "You got a new badge!",
+                    "color": 5301186,
+                    "author": {
+                        "name": msg.author.tag,
+                        "icon_url": msg.author.avatarURL
+                    },
+                    "fields": [{
+                        "name": badges[4].name,
+                        "value": badges[4].desc
+                    }]
+                };
+                msg.channel.send({
+                    embed
+                });
             }
             stats.badges.sort()
             stats.badges = JSON.stringify(stats.badges)
-            const embed = { //The purchase embed
-                "title": "Shop",
+            const embed = {
+                "title": "NEW BADGE",
+                "description": "You got a new badge!",
                 "color": 5301186,
                 "author": {
                     "name": msg.author.tag,
                     "icon_url": msg.author.avatarURL
                 },
                 "fields": [{
-                    "name": "Purchase successful!",
-                    "value": "New badge obtained - " + item.name + "!"
+                    "name": item.name,
+                    "value": item.desc
                 }]
-                
             };
             await msg.channel.send({
                 embed

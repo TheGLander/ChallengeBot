@@ -12,7 +12,7 @@ const sql = new SQLite('./database.sqlite');
 //Database setup
 const table = sql.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name = 'users';").get();
 if (!table['count(*)']) {
-    sql.prepare("CREATE TABLE users (id TEXT PRIMARY KEY, user TEXT, guild TEXT, coins INTEGER, badges TEXT, other TEXT);").run();
+    sql.prepare("CREATE TABLE users (id TEXT PRIMARY KEY, user TEXT, guild TEXT, coins INTEGER, badges TEXT, totalright INTEGER, totalwrong INTEGER, other TEXT);").run();
     sql.prepare("CREATE UNIQUE INDEX idx_users_id ON users (id);").run();
     sql.prepare("CREATE TABLE servers (id TEXT PRIMARY KEY, channel TEXT, other TEXT);").run();
     sql.prepare("CREATE UNIQUE INDEX idx_servers_id ON servers (id);").run();
@@ -50,10 +50,13 @@ var challengelist = {
  # # # # #     # # # # # # #     # # # # #
      # # # #                   # # # #    
        # # # #               # # # # */
+function SetBadges(stats) {
+    return stats;
+}
 
 function NewChallenge(guildID, type) {
     //Wait for 4-6 minutes
-    const timeout = 0//240000 + Math.round(120000 * Math.random())
+    const timeout = 0 //240000 + Math.round(120000 * Math.random())
     setTimeout(function (a) {
         const Data = sql.prepare(`SELECT * FROM servers WHERE id = ?`).get(guildID)
         if (Data === undefined) {
@@ -160,20 +163,43 @@ client.on('message', (msg) => {
         var challenge = challengelist[msg.guild.id]
         switch (challenge.type) {
             case 0:
+                var stats = sql.prepare("SELECT * FROM users WHERE user = ? AND guild = ?").get(msg.author.id, msg.guild.id);
+                if (!stats) {
+                    var stats = {
+                        "id": `${msg.author.id}-${msg.guild.id}`,
+                        "user": msg.author.id,
+                        "guild": msg.guild.id,
+                        "coins": 0,
+                        "badges": '[]',
+                        "totalright":0,
+                        "totalwrong":0,
+                        "other": ""
+                    }
+                }
+                stats.badges = JSON.parse(stats.badges);
+                //Check if the word starts with the letter
                 if (!(msg.content.toLowerCase().startsWith(challenge.letter))) {
                     msg.channel.send(`Word doesn't start with **${challenge.letter.toUpperCase()}**!`)
-                    return;
-                }
-                if (!dictionary.check(msg.content)) {
-                    msg.channel.send("Invalid word!")
-                    return;
-                }
-                if (useful.in_array(msg.content.toLowerCase(), challenge.words)) {
-                    msg.channel.send("Word already used!")
-                    return;
-                }
-                msg.channel.send(`<@${msg.author.id}> Just submitted a valid word, ${msg.content}!`)
-                challengelist[msg.guild.id].words[challengelist[msg.guild.id].words.length] = msg.content.toLowerCase();
+                    stats.totalwrong++
+                } else
+                    //Check if the word exists
+                    if (!dictionary.check(msg.content)) {
+                        msg.channel.send("Invalid word!")
+                        stats.totalwrong++
+                    } else
+                        //Check if the word is unique 
+                        if (useful.in_array(msg.content.toLowerCase(), challenge.words)) {
+                            msg.channel.send("Word already used!")
+                            stats.totalwrong++
+                        } else {
+                            stats.coins++
+                            stats.totalright++
+                            msg.channel.send(`<@${msg.author.id}> Just submitted a valid word, ${msg.content}, They get one coin!`)
+                            challengelist[msg.guild.id].words[challengelist[msg.guild.id].words.length] = msg.content.toLowerCase();
+                        }
+                stats.badges = SetBadges(stats.badges)
+                stats.badges = JSON.stringify(stats.badges);
+                sql.prepare("INSERT OR REPLACE INTO users (id, user, guild, coins, badges, totalright, totalwrong, other) VALUES (@id, @user, @guild, @coins, @badges, @totalright, @totalwrong, @other);").run(stats)
                 break;
         }
     }

@@ -51,6 +51,7 @@ var challengelist = {
  # # # # #     # # # # # # #     # # # # #
      # # # #                   # # # #    
        # # # #               # # # # */
+//Made with LOVE!
 //All available badges
 const badges = [{
         "name": "Purchasable badge A",

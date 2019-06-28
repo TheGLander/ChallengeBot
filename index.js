@@ -120,7 +120,7 @@ const badges = [{
     },
     {
         "name": "Purchasable badge C++",
-        "desc": "Oh no! A programming language reference!\n(Must have Purchasable badge C+)", //Oh no!
+        "desc": "Oh no! A programming language reference!\n(Must have Purchasable badge C+)",
         "condition": "useful.in_array(11, stats.badges)",
         "cost": 500
     },
@@ -139,13 +139,10 @@ function SetBadges(stats) { //Set the Badges having the stats
     return curbadges;
 }
 
-function NewChallenge(guildID, type, instant = false, kill = false) {
+function NewChallenge(guildID, type) {
     //Wait for 4-6 minutes
-    if (kill) {
-        clearTimeout(time)
-    }
-    const timeout = instant ? 0 : 240000 + Math.round(120000 * Math.random())
-    var time = setTimeout(function () {
+    const timeout = 240000 + Math.round(120000 * Math.random())
+    setTimeout(function (a) {
         const Data = sql.prepare(`SELECT * FROM servers WHERE id = ?`).get(guildID)
         if (Data === undefined) {
             //No channel setup - no challenges
@@ -169,16 +166,16 @@ function NewChallenge(guildID, type, instant = false, kill = false) {
                 setTimeout(function () {
                     channel.send("Time's up!")
                     delete challengelist[guildID]
-                    NewChallenge(guildID, 0, false, true)
+                    NewChallenge(guildID, 0)
                 }, config.QuizTimeLimit)
                 break;
         }
-    }, timeout);
+    }, timeout)
 }
 //The commands the bot can execute
 const Commands = {
     "info": (msg) => {
-        msg.channel.send(`Hello, I am a bot for Discord hack week, made by G lander#3543\nFor all commands use ${config.prefix}help`);
+        msg.channel.send(`Hello, I am a bot for Discord hack week, made by G lander#3543\n For all commands use ${config.prefix}help`);
     },
     "help": (msg) => {
 
@@ -352,7 +349,7 @@ const Commands = {
             }
             stats.coins -= item.cost
             stats.badges[stats.badges.length] = fields[itemID]
-            if (!stats.badges.includes(4)) {
+            if(!stats.badges.includes(4)){
                 stats.badges[stats.badges.length] = 4
                 const embed = {
                     "title": "NEW BADGE",
@@ -455,7 +452,7 @@ const Commands = {
                 console.log(error)
             }
             msg.channel.send("Setup done!")
-            NewChallenge(guildID, 0, false, true)
+            NewChallenge(msg.guild.id, 0)
         });
         collector.on('end', end => {
             if (end.size == 0) {
@@ -493,7 +490,8 @@ client.on("guildCreate", guild => {
     //Seek for first available channel and ask for setup
     var channels = guild.channels.array();
     for (var i = 0; i != channels.length; i++) {
-        if (channels[i].type == "text" && channels[i].permissionsFor(guild.me).has(1024)) {
+        if (channels[i].type == "text" && channels[i].permissionsFor(guild.me).has(`
+                            SEND_MESSAGES `)) {
             channels[i].send(`Hello! I am ChallengeBot, please set me up using ${config.prefix}setup!`);
             break;
         }
@@ -513,6 +511,7 @@ client.on('message', (msg) => {
         if (msg.channel.id != sql.prepare("SELECT * FROM servers WHERE id = ?").get(msg.guild.id).channel) {
             return;
         }
+        var challenge = challengelist[msg.guild.id]
         switch (challenge.type) {
             case 0:
                 var stats = sql.prepare("SELECT * FROM users WHERE user = ? AND guild = ?").get(msg.author.id, msg.guild.id);

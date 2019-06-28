@@ -139,10 +139,10 @@ function SetBadges(stats) { //Set the Badges having the stats
     return curbadges;
 }
 
-function NewChallenge(guildID, type) {
+async function NewChallenge(guildID, type) {
     //Wait for 4-6 minutes
     const timeout = 240000 + Math.round(120000 * Math.random())
-    setTimeout(function (a) {
+     setTimeout(async function (a) {
         const Data = sql.prepare(`SELECT * FROM servers WHERE id = ?`).get(guildID)
         if (Data === undefined) {
             //No channel setup - no challenges
@@ -162,9 +162,9 @@ function NewChallenge(guildID, type) {
                     "letterid": letterID,
                     "words": [defwords[letterID].toLowerCase()]
                 }
-                channel.send(`⭐                                        Challenge!                                        ⭐\nWrite as many words as you can which start with the letter **${letter.toUpperCase()}**!\n                                            Example: ${defwords[letterID]}\n                  For every right word you will gain a coin!\n                                    You have **2 minutes**!`);
-                setTimeout(function () {
-                    channel.send("Time's up!")
+                await channel.send(`⭐                                        Challenge!                                        ⭐\nWrite as many words as you can which start with the letter **${letter.toUpperCase()}**!\n                                            Example: ${defwords[letterID]}\n                  For every right word you will gain a coin!\n                                    You have **2 minutes**!`);
+                setTimeout(async function () {
+                    await channel.send("Time's up!")
                     delete challengelist[guildID]
                     NewChallenge(guildID, 0)
                 }, config.QuizTimeLimit)
@@ -483,15 +483,14 @@ client.on('ready', () => {
     client.user.setAvatar("./Avatar.jpg");
     var servers = sql.prepare("SELECT * FROM servers").all();
     for (var o = 0; o != servers.length; o++) {
-        NewChallenge(servers[0].id, 0);
+        NewChallenge(servers[o].id, 0);
     }
 })
 client.on("guildCreate", guild => {
     //Seek for first available channel and ask for setup
     var channels = guild.channels.array();
     for (var i = 0; i != channels.length; i++) {
-        if (channels[i].type == "text" && channels[i].permissionsFor(guild.me).has(`
-                            SEND_MESSAGES `)) {
+        if (channels[i].type == "text" && channels[i].permissionsFor(guild.me).has(1024)) {
             channels[i].send(`Hello! I am ChallengeBot, please set me up using ${config.prefix}setup!`);
             break;
         }

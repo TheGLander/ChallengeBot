@@ -483,14 +483,15 @@ client.on('ready', () => {
     console.log("I am ready!");
     client.user.setActivity(" with words");
     client.user.setStatus("idle");
-    var servers = sql.prepare("SELECT * FROM servers").all()
+    client.user.setAvatar("./Avatar.jpg");
+    var servers = sql.prepare("SELECT * FROM servers").all();
     for (var o = 0; o != servers.length; o++) {
-        NewChallenge(servers[0].id, 0)
+        NewChallenge(servers[0].id, 0);
     }
 })
 client.on("guildCreate", guild => {
     //Seek for first available channel and ask for setup
-    var channels = guild.channels.array()
+    var channels = guild.channels.array();
     for (var i = 0; i != channels.length; i++) {
         if (channels[i].type == "text" && channels[i].permissionsFor(guild.me).has(1024)) {
             channels[i].send(`Hello! I am ChallengeBot, please set me up using ${config.prefix}setup!`);
@@ -503,13 +504,12 @@ client.on('message', (msg) => {
         return;
     };
     if (!msg.guild) {
-        return
+        return;
     }
-    client.user.setAvatar("./Avatar.jpg")
     if (useful.in_array(msg.content.substr(config.prefix.length).split(" ")[0], Object.keys(Commands)) && msg.content.substr(0, config.prefix.length) == config.prefix) {
-        Commands[msg.content.substr(config.prefix.length).split(" ")[0]](msg)
+        Commands[msg.content.substr(config.prefix.length).split(" ")[0]](msg);
     } else if (challengelist[msg.guild.id] !== undefined) {
-        var challenge = challengelist[msg.guild.id]
+        var challenge = challengelist[msg.guild.id];
         if (msg.channel.id != sql.prepare("SELECT * FROM servers WHERE id = ?").get(msg.guild.id).channel) {
             return;
         }

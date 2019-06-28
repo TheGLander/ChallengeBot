@@ -193,7 +193,7 @@ const badges = [{
         "desc": "Not so clever I see\n(Say 50 wrong words)",
         "condition": "stats.totalwrong >= 50"
     },
-    , {
+    {
         "name": "Badge 29",
         "desc": "The only unrelated badge\n(Have 28 badges)",
         "condition": "stats.badges.length + 2 == badges.length"
@@ -217,9 +217,9 @@ function SetBadges(stats) { //Set the Badges having the stats
     return curbadges;
 }
 
-async function NewChallenge(guildID, type) {
+async function NewChallenge(guildID, type, immediate = false) {
     //Wait for 4-6 minutes
-    const timeout = 600000 + 240000 + Math.round(120000 * Math.random())
+    const timeout = immediate ? 0 : 600000 + 240000 + Math.round(120000 * Math.random())
     setTimeout(async function (a) {
         const Data = sql.prepare(`SELECT * FROM servers WHERE id = ?`).get(guildID)
         if (Data === undefined) {

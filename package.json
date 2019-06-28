@@ -1,0 +1,25 @@
+{
+  "name": "discordhackweek",
+  "version": "1.0.0",
+  "description": "Hello, this is a bot I made for Discord hack week!\r This bot is named Challenge bot.\r It's a bot that makes peeps do challenges once in a while.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheGLander/DiscordHackWeek.git"
+  },
+  "author": "G lander",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TheGLander/DiscordHackWeek/issues"
+  },
+  "homepage": "https://github.com/TheGLander/DiscordHackWeek#readme",
+  "dependencies": {
+    "better-sqlite3": "^5.4.0",
+    "discord.js": "^11.5.1",
+    "gsusefulfunctions": "^1.0.0",
+    "typo-js": "^1.0.3"
+  }
+}

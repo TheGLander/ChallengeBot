@@ -79,8 +79,39 @@ const badges = [{
     },
     {
         "name": "Vowel master",
-        "desc": "A true knower of vowels",
+        "desc": "A true knower of vowels\n(Say words which starts on each vowels)",
         "condition": "stats.alphabet.includes(0) && stats.alphabet.includes(4) && stats.alphabet.includes(8) && stats.alphabet.includes(14) && stats.alphabet.includes(20)"
+    },
+    {
+        "name": "Alphabet god",
+        "desc": "Oh wow..\n(Say words which starts on each letter of the alphabet)",
+        "condition": "stats.alphabet.length == letters.length",
+    },
+    {
+        "name": "Teacher",
+        "desc": "Today we will be learning...\n(Say 15 right words)",
+        "condition": "stats.totalright >= 15"
+    },
+    
+    {
+        "name": "Academician",
+        "desc": "Graduating already, huh?\n(Say 50 right words)",
+        "condition": "stats.totalright >= 50"
+    },
+    {
+        "name": "Scholar",
+        "desc": "Very good!\n(Say 100 right words)",
+        "condition": "stats.totalright >= 100"
+    },
+    {
+        "name": "Professor",
+        "desc": "Impossible!\n(Say 250 right words)",
+        "condition": "stats.totalright >= 250"
+    },
+    {
+        "name": "Wise Owl",
+        "desc":"The wisest of all\n(Say 500 right words)",
+        "condition":"stats.totalright >= 500"
     },
     {
         "name": "Purchasable badge A",
@@ -142,7 +173,7 @@ function SetBadges(stats) { //Set the Badges having the stats
 async function NewChallenge(guildID, type) {
     //Wait for 4-6 minutes
     const timeout = 240000 + Math.round(120000 * Math.random())
-     setTimeout(async function (a) {
+    setTimeout(async function (a) {
         const Data = sql.prepare(`SELECT * FROM servers WHERE id = ?`).get(guildID)
         if (Data === undefined) {
             //No channel setup - no challenges
@@ -349,7 +380,7 @@ const Commands = {
             }
             stats.coins -= item.cost
             stats.badges[stats.badges.length] = fields[itemID]
-            if(!stats.badges.includes(4)){
+            if (!stats.badges.includes(4)) {
                 stats.badges[stats.badges.length] = 4
                 const embed = {
                     "title": "NEW BADGE",

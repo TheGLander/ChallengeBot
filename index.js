@@ -92,7 +92,6 @@ const badges = [{
         "desc": "Today we will be learning...\n(Say 15 right words)",
         "condition": "stats.totalright >= 15"
     },
-    
     {
         "name": "Academician",
         "desc": "Graduating already, huh?\n(Say 50 right words)",

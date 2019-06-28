@@ -90,14 +90,9 @@ const badges = [{
         "cost": 500
     },
     {
-        "name": "First word!", //The name of the badge
-        "desc": "Say your first right word!\n(Say your first right word)", //It's description
-        "condition": "stats.totalright >= 1" //The logical condition for obtaining(Will be eval()'ed)
-    },
-    {
-        "name": "First-grader!",
-        "desc": "You are now a first grader, yay!\n(Say 3 right words)",
-        "condition": "stats.totalright >= 3"
+        "name": "Cheaters are never winners",
+        "desc": "Cheating is bad\n(Buy a badge)",
+        "condition": "false" //This badge is a special case, it's obtained after buying a badge, hardcoded in
     },
     {
         "name": "I am rich!",
@@ -130,24 +125,13 @@ const badges = [{
         "condition": "stats.coins >= 300"
     },
     {
-        "name": "Typo-man",
-        "desc": "Were these typos though?\n(Say 3 invalid words)",
-        "condition": "stats.totalwrong >= 3"
-    },
-    {
-        "name": "Cheaters are never winners",
-        "desc": "Cheating is bad\n(Buy a badge)",
-        "condition": "false" //This badge is a special case, it's obtained after buying a badge, hardcoded in
-    },
-    {
-        "name": "Vowel master",
-        "desc": "A true knower of vowels\n(Say words which starts on each vowels)",
-        "condition": "stats.alphabet.includes(0) && stats.alphabet.includes(4) && stats.alphabet.includes(8) && stats.alphabet.includes(14) && stats.alphabet.includes(20)"
-    },
-    {
-        "name": "Alphabet god",
-        "desc": "Oh wow..\n(Say words which starts on each letter of the alphabet)",
-        "condition": "stats.alphabet.length == letters.length",
+        "name": "First word!", //The name of the badge
+        "desc": "Say your first right word!\n(Say your first right word)", //It's description
+        "condition": "stats.totalright >= 1" //The logical condition for obtaining(Will be eval()'ed)
+    }, {
+        "name": "First-grader!",
+        "desc": "You are now a first grader, yay!\n(Say 3 right words)",
+        "condition": "stats.totalright >= 3"
     },
     {
         "name": "Teacher",
@@ -171,8 +155,27 @@ const badges = [{
     },
     {
         "name": "Wise Owl",
-        "desc":"The wisest of all\n(Say 500 right words)",
-        "condition":"stats.totalright >= 500"
+        "desc": "The wisest of all\n(Say 500 right words)",
+        "condition": "stats.totalright >= 500"
+    },
+    {
+        "name": "Vowel master",
+        "desc": "A true knower of vowels\n(Say words which starts on each vowels)",
+        "condition": "stats.alphabet.includes(0) && stats.alphabet.includes(4) && stats.alphabet.includes(8) && stats.alphabet.includes(14) && stats.alphabet.includes(20)"
+    }, {
+        "name": "Alphabet god",
+        "desc": "Oh wow..\n(Say words which starts on each letter of the alphabet)",
+        "condition": "stats.alphabet.length == letters.length",
+    },
+    {
+        "name": "Oops! A typo!",
+        "desc": "Everyone makes mistakes\n(Say an invalid words)",
+        "condition": "stats.totalwrong >= 1"
+    },
+    {
+        "name": "Typo-man",
+        "desc": "Were these typos though?\n(Say 3 invalid words)",
+        "condition": "stats.totalwrong >= 3"
     },
     {
         "name": "Egghead",
@@ -204,7 +207,7 @@ function SetBadges(stats) { //Set the Badges having the stats
 
 async function NewChallenge(guildID, type) {
     //Wait for 4-6 minutes
-    const timeout = 240000 + Math.round(120000 * Math.random())
+    const timeout = 600000 + 240000 + Math.round(120000 * Math.random())
     setTimeout(async function (a) {
         const Data = sql.prepare(`SELECT * FROM servers WHERE id = ?`).get(guildID)
         if (Data === undefined) {
@@ -310,8 +313,50 @@ const Commands = {
                         "value": top10[i].totalright + " valid words"
                     }
                 }
+                msg.channel.send({
+                    embed
+                })
                 break;
         }
+    },
+    "badges": async (msg) => {
+        const embed = { //The shop embed
+            "title": "Shop",
+            "color": 5301186,
+            "author": {
+                "name": msg.author.tag,
+                "icon_url": msg.author.avatarURL
+            },
+            "fields": []
+        };
+        var fields = []
+        //Get all the badges
+        for (var i = 0; i != badges.length; i++) {
+            fields[fields.length] = {
+                "name": `**${badges[i].name}**`,
+                "value": badges[i].desc
+            }
+        }
+        var page = parseInt(msg.content.split(" ")[1] === undefined ? 1 : msg.content.split(" ")[1]) //Get the page
+        var maxpage = fields.length / 5 > Math.trunc(fields.length / 5) ? Math.trunc(fields.length / 5) + 1 : fields.length / 5 //Get the page maximum
+        if (page > maxpage || page < 1 || isNaN(page)) { //Check if the number is valid
+            msg.channel.send("Invalid number");
+            return;
+        }
+        var limit = page == maxpage ? fields.length - 5 * (maxpage - 1) : 5 //The limit of pages
+        if (fields.length > 5) {
+            embed.footer = {
+                "text": "If you want to see more badges, append a number, like: cb!badges 2 (Page " + page + "/" + maxpage + ")" //If there are multiple pages
+            }
+        }
+        //Add the needed fields to the embed
+        for (var i = 0; i != limit; i++) {
+            embed.fields[embed.fields.length] = fields[i + (page - 1) * 5]
+        }
+        //Send the embed
+        await msg.channel.send({
+            embed
+        })
     },
     "stats": async (msg) => {
         var userID = msg.mentions.members.first() ? msg.mentions.members.first().id : msg.author.id
@@ -412,8 +457,8 @@ const Commands = {
             }
             stats.coins -= item.cost
             stats.badges[stats.badges.length] = fields[itemID]
-            if (!stats.badges.includes(16)) {
-                stats.badges[stats.badges.length] = 16
+            if (!stats.badges.includes(7)) {
+                stats.badges[stats.badges.length] = 7
                 const embed = {
                     "title": "NEW BADGE",
                     "description": "You got a new badge!",
@@ -493,6 +538,10 @@ const Commands = {
         })
     },
     "setup": (msg) => {
+        if (!msg.member.hasPermission(8)) {
+            msg.channel.send("You don't have the ADMIN permission!");
+            return;
+        }
         msg.channel.send("What is the channel where the challenges will appear?")
         collector = new discord.MessageCollector(msg.channel, m => !m.author.bot, {
             maxMatches: 1,

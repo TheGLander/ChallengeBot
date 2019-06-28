@@ -505,6 +505,7 @@ client.on('message', (msg) => {
     if (!msg.guild) {
         return
     }
+    client.user.setAvatar("./Avatar.jpg")
     if (useful.in_array(msg.content.substr(config.prefix.length).split(" ")[0], Object.keys(Commands)) && msg.content.substr(0, config.prefix.length) == config.prefix) {
         Commands[msg.content.substr(config.prefix.length).split(" ")[0]](msg)
     } else if (challengelist[msg.guild.id] !== undefined) {

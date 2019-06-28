@@ -4,7 +4,8 @@
   "description": "Hello, this is a bot I made for Discord hack week!\r This bot is named Challenge bot.\r It's a bot that makes peeps do challenges once in a while.",
   "main": "index.js",
   "scripts": {
-    "test": "node index"
+    "test": "node index",
+    "run":"node index"
   },
   "repository": {
     "type": "git",

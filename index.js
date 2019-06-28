@@ -679,7 +679,7 @@ client.on('ready', () => {
     for (var o = 0; o != client.guilds.size; o++) {
         var guild = sql.prepare("SELECT * FROM servers WHERE id = ?").get(client.guilds.array()[o].id)
         if (guild === undefined) {
-            var newGuild = client.guilds.get(servers[o].id)
+            var newGuild = client.guilds.array()[o]
             var channels = newGuild.channels.array()
             for (var i = 0; i != channels.length; i++) {
                 if (channels[i].type == "text" && channels[i].permissionsFor(newGuild.me).has(1024)) {

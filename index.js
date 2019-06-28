@@ -169,29 +169,40 @@ const badges = [{
     },
     {
         "name": "Oops! A typo!",
-        "desc": "Everyone makes mistakes\n(Say an invalid words)",
+        "desc": "Everyone makes mistakes\n(Say a wrong word)",
         "condition": "stats.totalwrong >= 1"
     },
     {
         "name": "Typo-man",
-        "desc": "Were these typos though?\n(Say 3 invalid words)",
+        "desc": "Were these typos though?\n(Say 3 wrong words)",
         "condition": "stats.totalwrong >= 3"
     },
     {
         "name": "Egghead",
-        "desc": "Are you sure?\n(Say 15 invalid words)",
+        "desc": "Are you sure?\n(Say 15 wrong words)",
         "condition": "stats.totalwrong >= 15"
     },
     {
         "name": "Dummy",
-        "desc": "Dummy!\n(Say 30 invalid words)",
+        "desc": "Dummy!\n(Say 30 wrong words)",
         "condition": "stats.totalwrong >= 30"
     },
     {
         "name": "Dunce",
-        "desc": "Not so clever I see\n(Say 50 invalid words)",
+        "desc": "Not so clever I see\n(Say 50 wrong words)",
         "condition": "stats.totalwrong >= 50"
     },
+    , {
+        "name": "Badge 29",
+        "desc": "The only unrelated badge\n(Have 28 badges)",
+        "condition": "stats.badges.length + 2 == badges.length"
+    },
+    {
+        "name": "THE MASTER BADGE",
+        "desc": "The ultimate badge...\n(Have all other badges)",
+        "condition": "stats.badges.length + 1 == badges.length",
+        "cost": 1000
+    }
 ]
 
 function SetBadges(stats) { //Set the Badges having the stats
@@ -244,7 +255,58 @@ const Commands = {
         msg.channel.send(`Hello, I am a bot for Discord hack week, made by G lander#3543\n For all commands use ${config.prefix}help`);
     },
     "help": (msg) => {
-
+        const embed = {
+            "title": "Help",
+            "color": 5301186,
+            "author": {
+                "name": msg.author.tag,
+                "icon_url": msg.author.avatarURL
+            },
+            "fields": [{
+                    "name": "cb!info",
+                    "value": "A bit of info."
+                },
+                {
+                    "name": "cb!help",
+                    "value": "Shows this message."
+                },
+                {
+                    "name": "cb!top",
+                    "value": "The leaderboards, sorted by right words."
+                },
+                {
+                    "name": "cb!top wrong",
+                    "value": "The leaderboards, sorted by wrong words."
+                },
+                {
+                    "name": "cb!top coins",
+                    "value": "The leaderboards, sorted by coins."
+                },
+                {
+                    "name": "cb!badges <page>",
+                    "value": "All the available badges, <page> is the page number(Can be nothing for page 1)."
+                },
+                {
+                    "name": "cb!stats <mention or ID>",
+                    "value": "Your(Or the mentioned user's) stats, which include right and wrong words, coins, and badges."
+                },
+                {
+                    "name": "cb!shop <page>",
+                    "value": "All the purchasable badges with their item ID's, <page> is the page number(Can be nothing for page 1)."
+                },
+                {
+                    "name": "cb!shop buy [item ID]",
+                    "value": "Buys a badge with the provided item ID, Must have enough coins, and the badge's conditions must be met."
+                },
+                {
+                    "name": "cb!setup",
+                    "value": "Starts the setup process, to setup, must have Administrator privileges"
+                }
+            ]
+        };
+        msg.channel.send({
+            embed
+        });
     },
     "top": async (msg) => {
         var top10;
@@ -264,7 +326,7 @@ const Commands = {
                 for (var i = 0; i != top10.length; i++) {
                     embed.fields[i] = {
                         "name": (await client.fetchUser(top10[i].user)).tag,
-                        "value": top10[i].totalwrong + " invalid words"
+                        "value": top10[i].totalwrong + " wrong words"
                     }
                 }
 
@@ -359,11 +421,24 @@ const Commands = {
         })
     },
     "stats": async (msg) => {
-        var userID = msg.mentions.members.first() ? msg.mentions.members.first().id : msg.author.id
-        var stats = sql.prepare("SELECT * FROM users WHERE user = ? AND guild = ?").get(userID, msg.guild.id);
+        if (msg.content.split(" ")[1] !== undefined) {
+            var user = await client.fetchUser(msg.content.split(" ")[1].replace(/[<>@]/g, "")) ? await client.fetchUser(msg.content.split(" ")[1].replace(/[<>@]/g, "")) : msg.author
+        } else {
+            var user = msg.author
+        }
+        var stats = sql.prepare("SELECT * FROM users WHERE user = ? AND guild = ?").get(user.id, msg.guild.id);
         if (!stats) {
-            msg.channel.send("You need to participate in a challenge to view your stats!");
-            return
+            var stats = {
+                "id": `${user.id}-${msg.guild.id}`,
+                "user": user.id,
+                "guild": msg.guild.id,
+                "coins": 0,
+                "badges": '[]',
+                "totalright": 0,
+                "totalwrong": 0,
+                "alphabet": "[]",
+                "other": ""
+            }
         }
         stats.alphabet = JSON.parse(stats.alphabet)
         stats.badges = JSON.parse(stats.badges)
@@ -374,11 +449,11 @@ const Commands = {
             "title": "Stats",
             "color": 5301186,
             "thumbnail": {
-                "url": msg.author.avatarURL
+                "url": user.avatarURL
             },
             "author": {
-                "name": msg.author.tag,
-                "icon_url": msg.author.avatarURL
+                "name": user.tag,
+                "icon_url": user.avatarURL
             },
             "fields": [{
                     "name": "Coins",
@@ -394,7 +469,7 @@ const Commands = {
                 },
                 {
                     "name": "Answered Letters",
-                    "value": JSON.stringify(stats.alphabet).toUpperCase().replace(/["[\]]/g, "")
+                    "value": JSON.stringify(stats.alphabet).toUpperCase().replace(/["[\]]/g, "") === "" ? "None" : JSON.stringify(stats.alphabet).toUpperCase().replace(/["[\]]/g, "")
                 }
             ]
         };
@@ -412,17 +487,33 @@ const Commands = {
             "title": "Badges",
             "color": 5301186,
             "thumbnail": {
-                "url": msg.author.avatarURL
+                "url": user.avatarURL
             },
             "author": {
-                "name": msg.author.tag,
-                "icon_url": msg.author.avatarURL
+                "name": user.tag,
+                "icon_url": user.avatarURL
             },
             "fields": fields
         };
         await msg.channel.send({
             embed
         })
+        var fields = []
+        if (stats.badges.length > 25) {
+            for (var i = 25; i != stats.badges.length; i++) {
+                fields[i - 25] = {
+                    "name": badges[stats.badges[i]].name,
+                    "value": badges[stats.badges[i]].desc
+                }
+            }
+            var embed = {
+                "color": 5301186,
+                "fields": fields
+            };
+            await msg.channel.send({
+                embed
+            })
+        }
     },
     "shop": async (msg) => {
         if (msg.content.split(" ")[1] == "buy") { //The buying process
@@ -573,29 +664,29 @@ const Commands = {
             return;
         });
     },
-    "exec": (msg) => {
-        msg.channel.send("Executing...")
-        try {
-            eval(useful.splitOnce(msg.content, ' ')[1])
-        } catch (e) {
-            //if (e instanceof SyntaxError) {
-            msg.channel.send(new discord.RichEmbed()
-                .setColor(0x4286f4)
-                .addField("ERROR:", e.message, true));
-            //}
-        }
-
-    }
 }
 client.login(config.token);
 client.on('ready', () => {
     console.log("I am ready!");
     client.user.setActivity(" with words");
     client.user.setStatus("idle");
-    client.user.setAvatar("./Avatar.jpg");
+    client.user.setAvatar("./Avatar.png")
     var servers = sql.prepare("SELECT * FROM servers").all();
     for (var o = 0; o != servers.length; o++) {
         NewChallenge(servers[o].id, 0);
+    }
+    for (var o = 0; o != client.guilds.size; o++) {
+        var guild = sql.prepare("SELECT * FROM servers WHERE id = ?").get(client.guilds.array()[o].id)
+        if (guild === undefined) {
+            var newGuild = client.guilds.get(servers[o].id)
+            var channels = newGuild.channels.array()
+            for (var i = 0; i != channels.length; i++) {
+                if (channels[i].type == "text" && channels[i].permissionsFor(newGuild.me).has(1024)) {
+                    channels[i].send(`Hello! I am ChallengeBot, please set me up using ${config.prefix}setup`);
+                    break;
+                }
+            }
+        }
     }
 })
 client.on("guildCreate", guild => {

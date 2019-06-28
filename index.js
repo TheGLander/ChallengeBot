@@ -53,6 +53,43 @@ var challengelist = {
        # # # #               # # # # */
 //All available badges
 const badges = [{
+        "name": "Purchasable badge A",
+        "desc": "Do you feel like a winner?",
+        "condition": "true", //When a badge has a cost, conditions acts like a requirement for buying
+        "cost": 15 //The cost of a badge(Buyable badges only)
+    }, {
+        "name": "Purchasable badge A+",
+        "desc": "You are the winner+!\n(Must have Purchasable badge A)",
+        "condition": "useful.in_array(0, stats.badges)",
+        "cost": 30
+    }, {
+        "name": "Purchasable badge B",
+        "desc": "You feel like a champion, right?",
+        "condition": "true",
+        "cost": 50
+    }, {
+        "name": "Purchasable badge B+",
+        "desc": "You are the super champion+!\n(Must have Purchasable badge B)",
+        "condition": "useful.in_array(2, stats.badges)",
+        "cost": 100
+    }, {
+        "name": "Purchasable badge C",
+        "desc": "You are a legend, am I right?",
+        "condition": "true",
+        "cost": 125
+    }, {
+        "name": "Purchasable badge C+",
+        "desc": "You are the ultra-super legend plus!\n(Must have Purchasable badge C)",
+        "condition": "useful.in_array(4, stats.badges)",
+        "cost": 250
+    },
+    {
+        "name": "Purchasable badge C++",
+        "desc": "Oh no! A programming language reference!\n(Must have Purchasable badge C+)",
+        "condition": "useful.in_array(5, stats.badges)",
+        "cost": 500
+    },
+    {
         "name": "First word!", //The name of the badge
         "desc": "Say your first right word!\n(Say your first right word)", //It's description
         "condition": "stats.totalright >= 1" //The logical condition for obtaining(Will be eval()'ed)
@@ -66,6 +103,31 @@ const badges = [{
         "name": "I am rich!",
         "desc": "You are rich!\n(Have 5 coins)",
         "condition": "stats.coins >= 5"
+    },
+    {
+        "name": "I am very rich!",
+        "desc": "You are very rich!\n(Have 10 coins)",
+        "condition": "stats.coins >= 10"
+    },
+    {
+        "name": "I am super rich!",
+        "desc": "You are super rich!\n(Have 25 coins)",
+        "condition": "stats.coins >= 25"
+    },
+    {
+        "name": "I am too rich!",
+        "desc": "You are too rich!\n(Have 75 coins)",
+        "condition": "stats.coins >= 75"
+    },
+    {
+        "name": "I am not rich!",
+        "desc": "You are not rich!\n(Have 150 coins)",
+        "condition": "stats.coins >= 150"
+    },
+    {
+        "name": "I think you can buy the world...",
+        "desc": "The world is expensive BTW\n(Have 300 coins)",
+        "condition": "stats.coins >= 300"
     },
     {
         "name": "Typo-man",
@@ -127,50 +189,6 @@ const badges = [{
         "desc": "Not so clever I see\n(Say 50 invalid words)",
         "condition": "stats.totalwrong >= 50"
     },
-    {
-        "name": "Purchasable badge A",
-        "desc": "Do you feel like a winner?",
-        "condition": "true", //When a badge has a cost, conditions acts like a requirement for buying
-        "cost": 15 //The cost of a badge(Buyable badges only)
-    },
-    {
-        "name": "Purchasable badge A+",
-        "desc": "You are the winner+!\n(Must have Purchasable badge A)",
-        "condition": "useful.in_array(6, stats.badges)",
-        "cost": 30
-    },
-    {
-        "name": "Purchasable badge B",
-        "desc": "You feel like a champion, right?",
-        "condition": "true",
-        "cost": 50
-    },
-    {
-        "name": "Purchasable badge B+",
-        "desc": "You are the super champion+!\n(Must have Purchasable badge B)",
-        "condition": "useful.in_array(8, stats.badges)",
-        "cost": 100
-    },
-    {
-        "name": "Purchasable badge C",
-        "desc": "You are a legend, am I right?",
-        "condition": "true",
-        "cost": 125
-    },
-    {
-        "name": "Purchasable badge C+",
-        "desc": "You are the ultra-super legend plus!\n(Must have Purchasable badge C)",
-        "condition": "useful.in_array(10, stats.badges)",
-        "cost": 250
-    },
-    {
-        "name": "Purchasable badge C++",
-        "desc": "Oh no! A programming language reference!\n(Must have Purchasable badge C+)",
-        "condition": "useful.in_array(11, stats.badges)",
-        "cost": 500
-    },
-
-
 ]
 
 function SetBadges(stats) { //Set the Badges having the stats
@@ -394,8 +412,8 @@ const Commands = {
             }
             stats.coins -= item.cost
             stats.badges[stats.badges.length] = fields[itemID]
-            if (!stats.badges.includes(4)) {
-                stats.badges[stats.badges.length] = 4
+            if (!stats.badges.includes(16)) {
+                stats.badges[stats.badges.length] = 16
                 const embed = {
                     "title": "NEW BADGE",
                     "description": "You got a new badge!",
@@ -405,8 +423,8 @@ const Commands = {
                         "icon_url": msg.author.avatarURL
                     },
                     "fields": [{
-                        "name": badges[4].name,
-                        "value": badges[4].desc
+                        "name": badges[16].name,
+                        "value": badges[16].desc
                     }]
                 };
                 msg.channel.send({

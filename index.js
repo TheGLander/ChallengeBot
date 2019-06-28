@@ -114,6 +114,21 @@ const badges = [{
         "condition":"stats.totalright >= 500"
     },
     {
+        "name": "Egghead",
+        "desc": "Are you sure?\n(Say 15 invalid words)",
+        "condition": "stats.totalwrong >= 15"
+    },
+    {
+        "name": "Dummy",
+        "desc": "Dummy!\n(Say 30 invalid words)",
+        "condition": "stats.totalwrong >= 30"
+    },
+    {
+        "name": "Dunce",
+        "desc": "Not so clever I see\n(Say 50 invalid words)",
+        "condition": "stats.totalwrong >= 50"
+    },
+    {
         "name": "Purchasable badge A",
         "desc": "Do you feel like a winner?",
         "condition": "true", //When a badge has a cost, conditions acts like a requirement for buying

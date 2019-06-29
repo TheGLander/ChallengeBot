@@ -3,7 +3,7 @@ Hello, this is a bot I made for Discord hack week!
 This bot is named Challenge bot.
 It's a bot that makes peeps do challenges once in a while.
 # Setup
-To host this bot yourself just run this having node and npm
+To host this bot yourself just run this in the directory having node and npm
 ```
 npm install&&npm run-script run
 ```
